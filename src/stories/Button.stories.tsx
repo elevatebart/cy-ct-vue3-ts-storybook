@@ -14,7 +14,7 @@ export default {
   },
   decorators: [
     () => ({
-      template: '<div style="border: 4px solid red"><story /></div>',
+      template: '<div style="border: 4px solid red">file<story /></div>',
     }),
   ],
 };
@@ -50,6 +50,11 @@ Large.args = {
   size: "large",
   label: "Button",
 };
+Large.decorators = [
+  () => ({
+    template: '<div style="border: 4px solid green">story<story /></div>',
+  }),
+];
 
 export const Small = Template.bind({});
 Small.args = {

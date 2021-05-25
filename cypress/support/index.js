@@ -14,7 +14,8 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
-import './commands'
+import "./commands";
+import * as sbPreview from "../../.storybook/preview";
+import { setGlobalConfig } from "../../src/testing-vue";
 
-// Alternatively you can use CommonJS syntax:
-// require('./commands')
+setGlobalConfig(sbPreview);

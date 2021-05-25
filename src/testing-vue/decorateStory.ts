@@ -26,8 +26,12 @@ function normalizeFunctionalComponent(
 function prepare(
   rawStory: StoryFnVueReturnType,
   innerStory?: ConcreteComponent
-): Component {
+): Component | null {
   const story = rawStory as ComponentOptions;
+
+  if (story == null) {
+    return null;
+  }
 
   if (innerStory) {
     return {
@@ -58,23 +62,34 @@ export default function decorateStory(
   storyFn: StoryFn<StoryFnVueReturnType>,
   decorators: DecoratorFunction<ConcreteComponent>[]
 ): StoryFn<Component> {
-  let finalDecoratedStory: LegacyStoryFn<Component> = (context) =>
-    prepare(storyFn(context));
-
-  decorators.forEach((decorator) => {
-    finalDecoratedStory = (context: StoryContext = defaultContext) => {
-      let story: StoryFn<Component>;
+  // @ts-ignore
+  return decorators.reduce(
+    // @ts-ignore
+    (decorated: StoryFn<ConcreteComponent>, decorator) => (
+      context: StoryContext = defaultContext
+    ) => {
+      let story;
 
       const decoratedStory = decorator(
-        ({ parameters, ...innerContext } = {} as StoryContext) =>
-          // @ts-ignore
-          finalDecoratedStory({ ...context, ...innerContext }),
+        (
+          { parameters, ...innerContext }: StoryContext = {} as StoryContext
+        ) => {
+          story = decorated({ ...context, ...innerContext });
+          return story;
+        },
         context
       );
 
-      // @ts-ignore
+      if (!story) {
+        story = decorated(context);
+      }
+
+      if (decoratedStory === story) {
+        return story;
+      }
+
       return prepare(decoratedStory, story);
-    };
-  });
-  return finalDecoratedStory;
+    },
+    (context: StoryContext) => prepare(storyFn(context))
+  );
 }

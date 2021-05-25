@@ -82,6 +82,7 @@ export function composeStory<GenericArgs>(
     ...(meta?.decorators || []),
     ...(globalConfig?.decorators || []),
   ];
+  console.log(globalConfig, combinedDecorators);
 
   const decorated = decorateStory(
     finalStoryFn as any,

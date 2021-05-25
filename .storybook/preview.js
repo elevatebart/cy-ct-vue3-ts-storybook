@@ -1,4 +1,3 @@
-
 export const parameters = {
   actions: { argTypesRegex: "^on[A-Z].*" },
   controls: {
@@ -7,4 +6,10 @@ export const parameters = {
       date: /Date$/,
     },
   },
-}
+};
+
+export const decorators = [
+  () => ({
+    template: '<div style="border: 4px solid blue">global<story /></div>',
+  }),
+];
