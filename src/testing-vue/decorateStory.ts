@@ -1,11 +1,6 @@
 import type { ConcreteComponent, Component, ComponentOptions } from "vue";
 import { h } from "vue";
-import {
-  StoryFn,
-  DecoratorFunction,
-  StoryContext,
-  LegacyStoryFn,
-} from "@storybook/addons";
+import { StoryFn, DecoratorFunction, StoryContext } from "@storybook/addons";
 
 type StoryFnVueReturnType = ConcreteComponent<any>;
 
@@ -58,38 +53,40 @@ const defaultContext: StoryContext = {
   globals: {},
 };
 
+function makeDecoration(
+  decorated: StoryFn<ConcreteComponent>,
+  decorator: DecoratorFunction<ConcreteComponent>
+): any {
+  return (context: StoryContext = defaultContext) => {
+    let story: ConcreteComponent | undefined;
+
+    const decoratedStory = decorator(
+      ({ parameters, ...innerContext }: StoryContext = {} as StoryContext) => {
+        story = decorated({ ...context, ...innerContext });
+        return story;
+      },
+      context
+    );
+
+    if (!story) {
+      story = decorated(context);
+    }
+
+    if (decoratedStory === story) {
+      return story;
+    }
+
+    return prepare(decoratedStory, story);
+  };
+}
+
 export default function decorateStory(
   storyFn: StoryFn<StoryFnVueReturnType>,
   decorators: DecoratorFunction<ConcreteComponent>[]
 ): StoryFn<Component> {
-  // @ts-ignore
   return decorators.reduce(
-    // @ts-ignore
-    (decorated: StoryFn<ConcreteComponent>, decorator) => (
-      context: StoryContext = defaultContext
-    ) => {
-      let story;
-
-      const decoratedStory = decorator(
-        (
-          { parameters, ...innerContext }: StoryContext = {} as StoryContext
-        ) => {
-          story = decorated({ ...context, ...innerContext });
-          return story;
-        },
-        context
-      );
-
-      if (!story) {
-        story = decorated(context);
-      }
-
-      if (decoratedStory === story) {
-        return story;
-      }
-
-      return prepare(decoratedStory, story);
-    },
-    (context: StoryContext) => prepare(storyFn(context))
+    (decorated, decorator) => makeDecoration(decorated, decorator),
+    ((context: StoryContext) =>
+      prepare(storyFn(context))) as StoryFn<ConcreteComponent>
   );
 }
