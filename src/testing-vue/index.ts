@@ -1,6 +1,10 @@
-import type { ComponentOptions } from "vue";
+import type { ComponentOptions, ConcreteComponent } from "vue";
 import { combineParameters } from "@storybook/client-api";
-import { ArgTypes, Parameters, BaseDecorators } from "@storybook/addons";
+import {
+  ArgTypes,
+  Parameters as SbParameters,
+  BaseDecorators,
+} from "@storybook/addons";
 import { Story, Meta, StoryContext } from "@storybook/vue3";
 import decorateStory from "./decorateStory";
 
@@ -13,10 +17,16 @@ type StoryFnVueReturnType = string | ComponentOptions<any>;
  */
 export type GlobalConfig = {
   decorators?: BaseDecorators<StoryFnVueReturnType>;
-  parameters?: Parameters;
+  parameters?: SbParameters;
   argTypes?: ArgTypes;
   [key: string]: any;
 };
+
+type Head<T extends any[]> = T extends [...infer Head, any] ? Head : any[];
+
+type ContextedStory<GenericArgs> = (
+  ...params: Partial<Head<Parameters<Story<Partial<GenericArgs>>>>>
+) => ConcreteComponent;
 
 /**
  * T represents the whole es module of a stories file. K of T means named exports (basically the Story type)
@@ -28,7 +38,7 @@ export type StoriesWithPartialProps<T> = {
   [K in keyof T as T[K] extends Story<any> ? K : never]: T[K] extends Story<
     infer P
   >
-    ? Story<Partial<P>>
+    ? ContextedStory<P>
     : unknown;
 };
 
@@ -42,7 +52,7 @@ export function composeStory<GenericArgs>(
   story: Story<GenericArgs>,
   meta: Meta,
   globalConfig: GlobalConfig = globalStorybookConfig
-): Story<Partial<GenericArgs>> {
+) {
   if (typeof story !== "function") {
     throw new Error(
       `Cannot compose story due to invalid format. @storybook/testing-vue expected a function but received ${typeof story} instead.`
@@ -86,8 +96,8 @@ export function composeStory<GenericArgs>(
     }
     return acc;
   }, {} as Record<string, { defaultValue: any }>);
-  return ((extraArgs: Record<string, any>) =>
-    // @ts-ignore
+
+  return ((extraArgs: Record<string, any> = {}) =>
     decorated({
       id: "",
       kind: "",
@@ -104,7 +114,7 @@ export function composeStory<GenericArgs>(
         ...story.args,
         ...extraArgs,
       },
-    })) as Story<Partial<GenericArgs>>;
+    })) as ContextedStory<GenericArgs>;
 }
 
 export function composeStories<
@@ -117,7 +127,7 @@ export function composeStories<
       storiesMap[key] = composeStory(story as Story, meta, globalConfig);
       return storiesMap;
     },
-    {} as { [key: string]: Story }
+    {} as { [key: string]: ContextedStory<any> }
   );
   return composedStories as StoriesWithPartialProps<T>;
 }

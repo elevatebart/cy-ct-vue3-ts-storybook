@@ -1,16 +1,29 @@
-import MyButton from './Button.vue';
+import type { Story } from "@storybook/vue3";
+import { template } from "cypress/types/lodash";
+import MyButton from "./Button.vue";
 
 export default {
-  title: 'Example/Button',
+  title: "Example/Button",
   component: MyButton,
   argTypes: {
-    backgroundColor: { control: 'color' },
-    size: { control: { type: 'select', options: ['small', 'medium', 'large'] } },
+    backgroundColor: { control: "color" },
+    size: {
+      control: { type: "select", options: ["small", "medium", "large"] },
+    },
     onClick: {},
   },
+  decorators: [
+    () => ({
+      template: '<div style="border: 4px solid red"><story /></div>',
+    }),
+  ],
 };
 
-const Template = (args) => ({
+const Template: Story<{
+  label: string;
+  primary?: boolean;
+  size?: "large" | "small";
+}> = (args) => ({
   // Components used in your story `template` are defined in the `components` object
   components: { MyButton },
   // The story's `args` need to be mapped into the template through the `setup()` method
@@ -24,22 +37,22 @@ const Template = (args) => ({
 export const Primary = Template.bind({});
 Primary.args = {
   primary: true,
-  label: 'Button',
+  label: "Button",
 };
 
 export const Secondary = Template.bind({});
 Secondary.args = {
-  label: 'Button',
+  label: "Button",
 };
 
 export const Large = Template.bind({});
 Large.args = {
-  size: 'large',
-  label: 'Button',
+  size: "large",
+  label: "Button",
 };
 
 export const Small = Template.bind({});
 Small.args = {
-  size: 'small',
-  label: 'Button',
+  size: "small",
+  label: "Button",
 };
