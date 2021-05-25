@@ -24,6 +24,10 @@ export type GlobalConfig = {
 
 type Head<T extends any[]> = T extends [...infer Head, any] ? Head : any[];
 
+/**
+ * A StoryFn where the context is already curried
+ * in other words no more context param at the end
+ */
 type ContextedStory<GenericArgs> = (
   ...params: Partial<Head<Parameters<Story<Partial<GenericArgs>>>>>
 ) => ConcreteComponent;
