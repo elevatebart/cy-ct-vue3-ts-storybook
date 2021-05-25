@@ -1,9 +1,4 @@
-import {
-  ComponentOptions,
-  ConcreteComponent,
-  defineComponent,
-  h as localH,
-} from "vue";
+import type { ComponentOptions } from "vue";
 import { combineParameters } from "@storybook/client-api";
 import { ArgTypes, Parameters, BaseDecorators } from "@storybook/addons";
 import { Story, Meta, StoryContext } from "@storybook/vue3";
@@ -68,23 +63,8 @@ export function composeStory<GenericArgs>(
         "composeStory does not support legacy style stories (with passArgsFirst = false)."
       );
     }
-    const component = story(
-      context.args as GenericArgs,
-      context
-    ) as StoryFnVueReturnType;
 
-    const cmp =
-      typeof component === "string" ? { template: component } : component;
-
-    cmp.props = Object.keys(context.args);
-
-    return defineComponent({
-      render() {
-        return localH(cmp, {
-          props: context.args,
-        });
-      },
-    });
+    return story(context.args as GenericArgs, context) as StoryFnVueReturnType;
   };
 
   const combinedDecorators = [
@@ -141,11 +121,3 @@ export function composeStories<
   );
   return composedStories as StoriesWithPartialProps<T>;
 }
-
-/**
- * Useful function for JSX syntax call of vue stories
- */
-export const h = (
-  cmp: (p: Record<string, any>) => ConcreteComponent,
-  { props }: { props?: any } = {}
-) => cmp(props);

@@ -2,6 +2,8 @@ const { startDevServer } = require("@cypress/webpack-dev-server");
 
 const webpackConfig = require("@vue/cli-service/webpack.config.js");
 
+webpackConfig.resolve.alias["vue$"] = "vue/dist/vue.esm-bundler.js";
+
 /// <reference types="cypress" />
 // ***********************************************************
 // This example plugins/index.js can be used to load plugins
@@ -24,10 +26,10 @@ module.exports = (on, config) => {
   // `config` is the resolved Cypress config
 
   if (config.testingType === "component") {
-    on("dev-server:start", options =>
+    on("dev-server:start", (options) =>
       startDevServer({
         options,
-        webpackConfig
+        webpackConfig,
       })
     );
   }
